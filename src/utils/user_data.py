@@ -17,7 +17,7 @@ if (__package__ is None or __package__ == ""):
     from constants import CONSTANTS as C
     from logger import logger
     from spinner import Spinner, format_error_msg
-    from schemas import CookieSchema, APIKeyResponse, APIKeyIDResponse, APICsrfResponse, KeyIdToken
+    from schemas import CookieSchema, APIKeyResponse, APIKeyIDResponse, APICsrfResponse, DanbooruAuthSchema, KeyIdToken
     from functional import  validate_schema, save_key_prompt, print_success, \
                             print_danger, load_configs, edit_configs, log_api_error, website_to_readable_format
 else:
@@ -26,7 +26,7 @@ else:
     from .constants import CONSTANTS as C
     from .logger import logger
     from .spinner import Spinner, format_error_msg
-    from .schemas import CookieSchema, APIKeyResponse, APIKeyIDResponse, APICsrfResponse, KeyIdToken
+    from .schemas import CookieSchema, APIKeyResponse, APIKeyIDResponse, APICsrfResponse, DanbooruAuthSchema, KeyIdToken
     from .functional import validate_schema, save_key_prompt, print_success, \
                             print_danger, load_configs, edit_configs, log_api_error, website_to_readable_format
 
@@ -531,6 +531,28 @@ class SecurePixivRefreshToken(UserData):
     def __repr__(self) -> str:
         return f"PixivRefreshToken<{self.data}>"
 
+class SecureDanbooruAuth(UserData):
+    def __init__(self, user_data:Optional[dict] = None):
+
+        super().__init__(
+            data=user_data,
+            data_path=C.DANBOORU_AUTH_PATH
+        )
+
+    def save_data(self) -> None:
+        """Saves the data to the user's machine."""
+        return self.encrypt_data(data=json.dumps(self.data))
+
+    def load_data(self) -> Union[str, None]:
+        """Loads the data from the user's machine from the saved file."""
+        return self.decrypt_data(decode=True, schema=DanbooruAuthSchema)
+
+    def __str__(self) -> str:
+        return self.data if (self.data is not None) else ""
+
+    def __repr__(self) -> str:
+        return f"DanbooruAuth<{self.data}>"
+
 def save_key_with_retries(obj: Union[SecureCookie, SecureGDriveAPIKey, SecurePixivRefreshToken], save_key_locally: bool) -> bool:
     """Saves the user's key to the API server.
 
@@ -892,10 +914,50 @@ def save_pixiv_refresh_token(refresh_token: str) -> None:
         refresh_token=refresh_token
     )
 
+def load_danbooru_auth() -> Union[dict[str], None]:
+    """Decrypts and load the Danbooru authentication data from the user's machine.
+
+    Returns:
+        dict[str] | None:
+            The Danbooru authentication data (containing username, API key and image size), False if the user has not saved the api key, 
+            or None if the API key could not be loaded (connection/decryption issues).
+    """
+    danbooru_auth = load_and_decrypt_data(
+        data_path=C.DANBOORU_AUTH_PATH,
+        secure_obj=SecureDanbooruAuth,
+    )
+    if (danbooru_auth is False):
+        return
+    if (danbooru_auth is None):
+        print_danger("Could not load Danbooru auth data either due to decryption issues.\n")
+        return
+
+    return danbooru_auth
+
+def save_danbooru_auth(username:str, api_key:str) -> None:
+    """Saves Danbooru authentication data to the user's machine.
+
+    Args:
+        username (str):
+            Danbooru username.
+        api_key (str):
+            API key that corresponds to username.
+
+    Returns:
+        None
+    """
+
+    save_and_encrypt_data(
+        data_name="Danbooru username and API key",
+        secure_obj=SecureDanbooruAuth,
+        user_data = {"username": username, "api_key": api_key}
+    )
+
 __all__ = [
     "SecureCookie",
     "SecureGDriveAPIKey",
     "SecurePixivRefreshToken",
+    "SecureDanbooruAuth",
     "SaveCookieThread",
     "LoadCookieThread",
     "save_data",
@@ -906,6 +968,8 @@ __all__ = [
     "save_gdrive_api_key",
     "load_pixiv_refresh_token",
     "save_pixiv_refresh_token",
+    "load_danbooru_auth",
+    "save_danbooru_auth",
     "convert_website_to_path"
 ]
 

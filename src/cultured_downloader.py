@@ -9,6 +9,7 @@ import webbrowser
 
 # import local libraries
 from utils import *
+from utils import danbooru
 from utils import __version__, __author__, __license__
 
 # import third-party libraries
@@ -24,7 +25,8 @@ if (C.USER_PLATFORM == "Windows"):
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 def print_main_menu(login_status: dict[str, bool], 
-                    drive_service: Union[str, None], pixiv_api: Union[PixivAPI, None]) -> None:
+                    drive_service: Union[str, None], pixiv_api: Union[PixivAPI, None], 
+                    danbooru_profile:danbooru.UserProfile) -> None:
     """Print the menu for the user to read and enter their desired action.
 
     Args:
@@ -35,6 +37,8 @@ def print_main_menu(login_status: dict[str, bool],
             The Google Drive API Service Object if it exists, None otherwise.
         pixiv_api (PixivAPI | None):
             The PixivAPI object if it exists, None otherwise.
+        danbooru_profile (danbooru.UserProfile):
+            The danbooru.UserProfile object, set to default variables if does not exist.
 
     Returns:
         None
@@ -45,29 +49,36 @@ def print_main_menu(login_status: dict[str, bool],
 > Login Status...
 > Fantia: {'Logged In' if (fantia_status) else 'Guest (Not logged in)'}
 > Pixiv Fanbox: {'Logged In' if (pixiv_fanbox_status) else 'Guest (Not logged in)'}
+> {danbooru_profile}
 {C.END}
 ------------ {F.LIGHTYELLOW_EX}Download Options{C.END} ------------
     {F.GREEN}1. Download Fantia Posts{C.END}
     {F.LIGHTCYAN_EX}2. Download Pixiv Illustrations{C.END}
     {F.YELLOW}3. Download Pixiv Fanbox Posts{C.END}
+    {F.BLUE}4. Download Danbooru Posts{C.END}
 
 ------------- {F.LIGHTYELLOW_EX}Config Options{C.END} -------------
-    {F.LIGHTBLUE_EX}4. Change Default Download Folder{C.END}""")
+    {F.LIGHTBLUE_EX}5. Change Default Download Folder{C.END}""")
 
     if (drive_service is None):
-        print(f"""    {F.LIGHTBLUE_EX}5. Add Google Drive API Key{C.END}""")
+        print(f"""    {F.LIGHTBLUE_EX}6. Add Google Drive API Key{C.END}""")
     else:
-        print(f"""    {F.LIGHTBLUE_EX}5. Remove Saved Google Drive API Key{C.END}""")
+        print(f"""    {F.LIGHTBLUE_EX}6. Remove Saved Google Drive API Key{C.END}""")
 
     if (pixiv_api is None):
-        print(f"""    {F.LIGHTBLUE_EX}6. Configure Pixiv OAuth{C.END}""")
+        print(f"""    {F.LIGHTBLUE_EX}7. Configure Pixiv OAuth{C.END}""")
     else:
-        print(f"""    {F.LIGHTBLUE_EX}6. Remove Saved Pixiv refresh token{C.END}""")
+        print(f"""    {F.LIGHTBLUE_EX}7. Remove Saved Pixiv refresh token{C.END}""")
+
+    if (danbooru_profile.id is None):
+        print(f"""    {F.LIGHTBLUE_EX}8. Add Danbooru API Key{C.END}""")
+    else:
+        print(f"""    {F.LIGHTBLUE_EX}8. Remove Saved Danbooru API Key{C.END}""")
 
     if (not fantia_status or not pixiv_fanbox_status):
-        print(f"    {F.LIGHTBLUE_EX}7. Login{C.END}")
+        print(f"    {F.LIGHTBLUE_EX}9. Login{C.END}")
     if (fantia_status or pixiv_fanbox_status):
-        print(f"    {F.LIGHTBLUE_EX}8. Logout{C.END}")
+        print(f"    {F.LIGHTBLUE_EX}10. Logout{C.END}")
 
     print(f"\n------------- {F.LIGHTYELLOW_EX}Other Options{C.END} -------------")
     print(f"    {F.LIGHTRED_EX}Y. Report a bug{C.END}")
@@ -123,11 +134,215 @@ def print_pixiv_menu() -> None:
 
 ----------------------------------------------""")
 
+def configure_danbooru_auth() -> None:
+    while True:
+        username = input("Enter Username (leave blank to cancel): ")
+
+        if username != "":
+            print(f"{F.LIGHTBLUE_EX}You can get your API key here: {C.DANBOORU_API_KEY_LOGIN}{C.END}")
+            while True:    
+                api_key = input("Enter API Key (leave blank to cancel, -h for help): ")
+
+                if api_key == "-h":
+                    guide_tab = webbrowser.open(C.DANBOORU_API_KEY_GUIDE_PAGE, new=1)
+                    if guide_tab:
+                        print_success("Opened a new tab in your browser to the guide.")
+                    else:
+                        print_warning(f"Failed to open browser tab. Please open the following URL manually: {C.DANBOORU_API_KEY_GUIDE_PAGE}\n")
+                
+                elif api_key != "":
+                    try:
+                        data = danbooru.get_user_data(username, api_key)
+
+                        save_danbooru_auth(username, api_key)
+                        danbooru.username = username
+                        danbooru.api_key = api_key
+                        danbooru.user_profile = data
+                    except ValueError as error:
+                        print_danger(error)
+                    return
+                else:
+                    print()
+                    break
+            continue
+        return
+
+def danbooru_pool_download_menu(pool:danbooru.Pool):
+    mode = "order"
+    limit = pool.post_count
+    direction = ">"
+    pivot = 0
+
+    while True:
+        print(f"""\
+Limit: {F.LIGHTYELLOW_EX}{limit}{C.END}\t\
+Range: {F.LIGHTYELLOW_EX}{direction} {pivot}{C.END}\t\
+By {F.LIGHTYELLOW_EX if mode == "id" else F.LIGHTBLACK_EX}id{C.END}\
+/{F.LIGHTYELLOW_EX if mode == "order" else F.LIGHTBLACK_EX}order{C.END}
+{pool}
+
+-------- {F.LIGHTGREEN_EX}Customise Downloads{C.END} --------
+{F.LIGHTYELLOW_EX}
+1. Edit post limit
+2. Edit post range
+3. Toggle filter type{F.LIGHTCYAN_EX}
+4. Begin download{F.LIGHTRED_EX}
+B. Return
+{C.END}
+-------------------------------------""")
+        settings = get_input("Enter command: ", inputs = ("B", "1", "2", "3", "4"))
+        if settings == "1":
+            limit = input("Enter new limit: ")
+            while not limit.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                limit = input("Enter new limit: ")        
+            limit = min(int(limit), pool.post_count)
+
+        elif settings == "2":
+            pivot = input("Please enter a pivot point: ")
+            while not pivot.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                pivot = input("Please enter a pivot point: ")
+
+            pivot = min(int(pivot), 10000000)
+            direction = get_input("Please enter the direction relative to the pivot (\"<\" or \">\"): ", inputs = ("<", ">"))
+
+        elif settings == "3":
+            mode = "order" if mode == "id" else "id"
+
+        elif settings == "4":
+            try:
+                asyncio.run(pool.save(mode, limit, direction, pivot))
+                return
+            except KeyboardInterrupt:
+                return
+        else:
+            return
+        print()
+
+def danbooru_artist_download_menu(artist:danbooru.Artist):
+    limit = 200
+    direction = ">"
+    pivot = 0
+    while True:
+        print(f"""\
+Limit: {F.LIGHTYELLOW_EX}{limit}{C.END}\t\
+Range: {F.LIGHTYELLOW_EX}{direction} {pivot}{C.END}
+{artist}
+
+-------- {F.LIGHTGREEN_EX}Customise Downloads{C.END} --------
+{F.LIGHTYELLOW_EX}
+1. Edit post limit
+2. Edit post range{F.LIGHTCYAN_EX}
+3. Begin download{F.LIGHTRED_EX}
+B. Return
+{C.END}
+-------------------------------------""")
+        settings = get_input("Enter command: ", inputs = ("B", "1", "2", "3"))
+        if settings == "1":
+            limit = input("Enter new limit: ")
+            while not limit.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                limit = input("Enter new limit: ")        
+            limit = min(int(limit), 200)
+
+        elif settings == "2":
+            pivot = input("Please enter a pivot point: ")
+            while not pivot.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                pivot = input("Please enter a pivot point: ")
+
+            pivot = min(int(pivot), 10000000)
+            direction = get_input("Please enter the direction relative to the pivot (\"<\" or \">\"): ", inputs = ("<", ">"))
+
+        elif settings == "3":
+            try:
+                asyncio.run(artist.save(limit, direction, pivot))
+                return
+            except KeyboardInterrupt:
+                print("\rKeyboard Interrupted")
+                return
+        else:
+            return
+        print()
+
+def danbooru_download_menu():
+    while True:
+        print(f"""\
+----------- {F.LIGHTGREEN_EX}Danbooru Download Options{C.END} -----------
+{F.LIGHTYELLOW_EX}
+1. Download individual posts
+2. Download images by pool
+3. Download images by artist tag (200 max){F.LIGHTBLUE_EX}
+4. Toggle current image size {F.LIGHTCYAN_EX}\
+({danbooru.image_size}){F.LIGHTRED_EX}
+B. Return to Main Menu{C.END}
+
+-------------------------------------------------""")
+        selection = get_input("Enter Command: ", inputs=("B", "1", "2", "3", "4"))
+        if selection == "1":
+            post_id = input("Enter post ID: ")
+            while not post_id.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                post_id = input("Enter post ID: ")
+
+            response = danbooru.fetch_resource(post_id, "post")
+            message = danbooru.verify_response(post_id, "post", response)
+
+            if message is not None:
+                print_warning(message)
+            else:
+                print_success("\nPost successfully fetched.")
+                post = danbooru.Post(post_id, response.json(), detailed=True)
+                print(post)
+                if get_input("Download post? (Y/n): ", inputs=("y", "n"), default="y") == "y":
+                    asyncio.run(post.save())
+                
+        elif selection == "2":
+            pool_id = input("Enter pool ID: ")
+            while not pool_id.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                pool_id = input("Enter pool ID: ")
+
+            response = danbooru.fetch_resource(pool_id, "pool")
+            message = danbooru.verify_response(pool_id, "pool", response)
+
+            if message is not None:
+                print(message)
+            else:
+                print_success("\nPool successfully fetched.")
+                pool = danbooru.Pool(pool_id, response.json())
+                danbooru_pool_download_menu(pool)
+
+        elif selection == "3":
+            artist_id = input("Enter artist ID: ")
+            while not artist_id.isdecimal():
+                print_danger("Please enter a positive whole number.")
+                artist_id = input("Enter artist ID: ")
+
+            response = danbooru.fetch_resource(artist_id, "artist")
+            message = danbooru.verify_response(artist_id, "artist", response)
+
+            if message is not None:
+                print(message)
+            else:
+                print_success("\nArtist successfully fetched.")
+                artist = danbooru.Artist(artist_id, response.json())
+                danbooru_artist_download_menu(artist)
+
+        elif selection == "4":
+            danbooru.image_size = "small" if danbooru.image_size == "large" else "large"
+
+        else:
+            return
+        print()
+
 def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
     """Main program function."""
     login_status = {}
     drive_service = get_gdrive_service()
     pixiv_api = get_pixiv_api()
+    danbooru.auto_init()
 
     if (user_has_saved_cookies()):
         load_cookies = get_input(
@@ -200,7 +415,8 @@ def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
         print_main_menu(
             login_status=login_status, 
             drive_service=drive_service,
-            pixiv_api=pixiv_api
+            pixiv_api=pixiv_api,
+            danbooru_profile=danbooru.user_profile
         )
         user_action = get_input(
             input_msg="Enter command: ", 
@@ -296,11 +512,15 @@ def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
             nested_menu(website="pixiv_fanbox")
 
         elif (user_action == "4"):
+            # Download Danbooru Posts
+            danbooru_download_menu()
+
+        elif (user_action == "5"):
             # Change Default Download Folder
             change_download_directory(configs=configs, print_message=True)
             configs = load_configs()
 
-        elif (user_action == "5"):
+        elif (user_action == "6"):
             # Google Drive API key configurations
             if (drive_service is None):
                 # Setup Google Drive API key
@@ -353,7 +573,7 @@ def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
                 drive_service = None
                 print_success("Successfully deleted Google Drive API key.")
 
-        elif (user_action == "6"):
+        elif (user_action == "7"):
             # Pixiv OAuth configurations
             if (pixiv_api is None):
                 # Setup Pixiv OAuth
@@ -374,7 +594,23 @@ def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
                 pixiv_api = None
                 print_success("Successfully deleted Pixiv refresh token.")
 
-        elif (user_action == "7"):
+        elif (user_action == "8"):
+            # Danbooru API key configurations
+            if danbooru.username is None or danbooru.api_key is None:
+                configure_danbooru_auth()
+            else:
+                remove_danbooru_auth = get_input(
+                    input_msg="Are you sure you want to delete your saved Danbooru API key? (y/N): ",
+                    inputs=("y", "n"),
+                    default="n"
+                )
+                if (remove_danbooru_auth == "n"):
+                    continue
+                C.DANBOORU_AUTH_PATH.unlink(missing_ok=True)
+                danbooru.username, danbooru.api_key = None, None
+                print_success("Successfully deleted Pixiv refresh token.")
+
+        elif (user_action == "9"):
             # Login
             fantia_logged_in = login_status.get("fantia", False)
             pixiv_fanbox_logged_in = login_status.get("pixiv_fanbox", False)
@@ -396,7 +632,7 @@ def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
                 )
             save_cookies(*[fantia_login_result, pixiv_fanbox_login_result])
 
-        elif (user_action == "8"):
+        elif (user_action == "10"):
             # logout
             fantia_logged_in = login_status.get("fantia", False)
             pixiv_fanbox_logged_in = login_status.get("pixiv_fanbox", False)

@@ -13,3 +13,9 @@ class PixivOAuthRefreshError(CulturedDownloaderBaseError):
 
 class PixivOAuthRefreshedError(CulturedDownloaderBaseError):
     """Exception raised when the OAuth token has expired but has been refreshed."""
+
+class TooManyRequests(CulturedDownloaderBaseError):
+    """Server responded with a status of 429; may occur with frequent requests."""
+
+class ApiKeyError(CulturedDownloaderBaseError):
+    """API key or username configured incorrectly."""

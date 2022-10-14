@@ -58,7 +58,7 @@ else:
 class Constants:
     """This dataclass is used to store all the constants used in the application."""
     # Inputs regex or tuples
-    CMD_REGEX: re.Pattern[str] = re.compile(r"^[1-8xy]$")
+    CMD_REGEX: re.Pattern[str] = re.compile(r"(?:[1-9xy]|10)")
     GOOGLE_API_KEY_INPUT_REGEX: re.Pattern[str] = re.compile(
         r"^AIza[\w-]{35}$|^[xX]$|^-h$"
     )
@@ -104,12 +104,14 @@ class Constants:
     GDRIVE_API_KEY_PATH: pathlib.Path = appDir.joinpath("gdrive-api-key")
     KEY_ID_TOKEN_JSON_PATH: pathlib.Path = appDir.joinpath("key-id-token.json")
     SECRET_KEY_PATH: pathlib.Path = appDir.joinpath("secret.key")
+    DANBOORU_AUTH_PATH: pathlib.Path = appDir.joinpath("danbooru-auth")
 
     # GitHub URLs
     ISSUE_PAGE: str = "https://github.com/KJHJason/Cultured-Downloader/issues"
     GDRIVE_API_KEY_GUIDE_PAGE: str = "https://github.com/KJHJason/Cultured-Downloader/blob/main/doc/google_api_key_guide.md"
     # TODO: update the link below
     PIXIV_OAUTH_GUIDE_PAGE: str = "https://github.com/KJHJason/Cultured-Downloader/blob/main/doc/pixiv_oauth_guide.md"
+    DANBOORU_API_KEY_GUIDE_PAGE: str = "https://www.google.com"
 
     # For downloading
     GDRIVE_HINT_TYPING: TypeAlias = list[tuple[str, tuple[str, pathlib.Path]]]
@@ -189,6 +191,8 @@ class Constants:
     # Pixiv Fanbox permitted file extensions based on
     #   https://fanbox.pixiv.help/hc/en-us/articles/360011057793-What-types-of-attachments-can-I-post-
     PIXIV_FANBOX_ALLOWED_IMAGE_FORMATS: tuple[str] = ("jpg", "jpeg", "png", "gif")
+
+    DANBOORU_API_KEY_LOGIN:str = "https://danbooru.donmai.us/login?url=%2Fapi_keys"
 
 CONSTANTS = Constants()
 
