@@ -20,7 +20,7 @@ By using the [link][1] provided by the console, you will be prompted by Danbooru
 Upon logging in, you should be redirected to the [API keys page][2].
 
 ## Step 2: Generating an API key
-<span style="color:red; font-weight:bolder">Please do not share your API key with anyone; this will allow them access to your account!</span>
+:warning: **Please do not share your API key with anyone; this will allow them access to your account!** :warning:
 
 <img src="/res/guide/danbooru_api_key/step-2.1.webp" alt="step 2.1" style="width: 70%;">
 
