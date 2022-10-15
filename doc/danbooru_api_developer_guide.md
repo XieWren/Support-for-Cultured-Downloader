@@ -41,7 +41,7 @@
 </tr>
 <tr>
     <td><a href="https://danbooru.donmai.us/posts/728304">728304</a></td>
-    <td>Banned Post<br>[Alternate Source: <a href="https://gelbooru.com/index.php?page=post&s=view&id=5093788">5093788</a>]</td>
+    <td>Banned Post<br>[<a href="https://gelbooru.com/index.php?page=post&s=view&id=5093788">Alternate Source</a>]</td>
     <td>"md5", file_url", "large_file_url" and "preview_file_url" not available to users, but "source" and "pixiv_id" are still available. "is_banned" is set to True.</td>
     <td rowspan=4>Unique Posts</td>
 </tr>
@@ -71,23 +71,23 @@
     <td>Flash Game [.swf]</td>
 </tr>
 <tr>
-    <td><a>5199083</a></td>
+    <td><a href="https://danbooru.donmai.us/posts/5199083">5199083</a></td>
     <td>1 artist, some characters</td>
     <td>Most common</td>
     <td rowspan=6>Working with Tags</td>
 </tr>
 <tr>
-    <td><a>1370619</a></td>
+    <td><a href="https://danbooru.donmai.us/posts/1370619">1370619</a></td>
     <td>1 artist, 1 character</td>
     <td></td>
 </tr>
 <tr>
-    <td><a>5666026</a></td>
+    <td><a href="https://danbooru.donmai.us/posts/5666026">5666026</a></td>
     <td>1 artist, some copyrights</td>
     <td></td>
 </tr>
 <tr>
-    <td><a>1384660</a></td>
+    <td><a  href="https://danbooru.donmai.us/posts/1384660">1384660</a></td>
     <td>A few artists and copyrights</td>
     <td></td>
 </tr>
@@ -97,7 +97,7 @@
     <td></td>
 </tr>
 <tr>
-    <td><a>1747730</a></td>
+    <td><a href="https://danbooru.donmai.us/posts/1747730">1747730</a></td>
     <td>No artists and characters</td>
     <td></td>
 </tr>
@@ -143,8 +143,6 @@ This may be relevant for http query timeouts, though should not affect the curre
 
 #### Further Info
 Danbooru Documentation can be found [here][14].
-
-*[double quotes]: ""
 
 [1]: https://testbooru.donmai.us/pools/8
 [2]: https://danbooru.donmai.us/pools/5668
