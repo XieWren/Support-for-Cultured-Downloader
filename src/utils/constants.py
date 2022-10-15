@@ -111,7 +111,7 @@ class Constants:
     GDRIVE_API_KEY_GUIDE_PAGE: str = "https://github.com/KJHJason/Cultured-Downloader/blob/main/doc/google_api_key_guide.md"
     # TODO: update the link below
     PIXIV_OAUTH_GUIDE_PAGE: str = "https://github.com/KJHJason/Cultured-Downloader/blob/main/doc/pixiv_oauth_guide.md"
-    DANBOORU_API_KEY_GUIDE_PAGE: str = "https://www.google.com"
+    DANBOORU_API_KEY_GUIDE_PAGE: str = "https://github.com/XieWren/Support-for-Cultured-Downloader/blob/main/doc/danbooru_api_key_guide.md"
 
     # For downloading
     GDRIVE_HINT_TYPING: TypeAlias = list[tuple[str, tuple[str, pathlib.Path]]]
