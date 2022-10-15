@@ -11,7 +11,7 @@ If you are planning on accessing posts that are public (for example, posts not p
 - You must have a Danbooru account.
 - You are running Cultured Downloader as you follow this guide.
 
-## Step 1: Logging in to Danbooru
+## Step 1: Login to Danbooru
 
 <img src="/res/guide/danbooru_api_key/step-1.webp" alt="step 1" style="width: 70%;">
 
@@ -19,8 +19,8 @@ By using the [link][1] provided by the console, you will be prompted by Danbooru
 
 Upon logging in, you should be redirected to the [API keys page][2].
 
-## Step 2: Generating an API key
-:warning: **Please do not share your API key with anyone; this will allow them access to your account!** :warning:
+## Step 2: Generate an API key
+:warning: *Please do not share your API key with anyone; this will allow them access to your account!* :warning:
 
 <img src="/res/guide/danbooru_api_key/step-2.1.webp" alt="step 2.1" style="width: 70%;">
 
