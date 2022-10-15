@@ -608,6 +608,7 @@ def main_program(driver: webdriver.Chrome, configs: ConfigSchema) -> None:
                     continue
                 C.DANBOORU_AUTH_PATH.unlink(missing_ok=True)
                 danbooru.username, danbooru.api_key = None, None
+                danbooru.user_profile = danbooru.UserProfile(None, "Anonymous", 0, "Anonymous")
                 print_success("Successfully deleted Pixiv refresh token.")
 
         elif (user_action == "9"):
