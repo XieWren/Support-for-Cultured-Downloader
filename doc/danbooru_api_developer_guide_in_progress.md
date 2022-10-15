@@ -6,7 +6,7 @@
 │ │ │
 └─┴─┘
      
-<!--
+
 <table>
 <tr><th>Post ID</th><th>Comments</th><th>Effects</th></tr>
 <tr><td><a href="https://danbooru.donmai.us/posts/4979439">4979439</a></td><td>Control; Pixiv Source</td></tr>
@@ -26,7 +26,7 @@
 <tr><td></td><td></td></tr>
 <tr><td></td><td></td></tr>
 <tr><td></td><td></td></tr>
-</table>-->
+</table>
 
 
 ┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
